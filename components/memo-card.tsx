@@ -1,0 +1,70 @@
+"use client";
+
+import Link from "next/link";
+import { MemoWithAuthor } from "@/types/db";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+
+const categoryLabel: Record<string, string> = {
+  env: "Env",
+  frontend: "Frontend",
+  backend: "Backend",
+  db: "DB",
+  git: "Git",
+  other: "Other",
+  chat: "Chat",
+};
+
+const categoryClass: Record<string, string> = {
+  env: "border-sky-500/40 bg-sky-500/15 text-sky-200",
+  frontend: "border-indigo-500/40 bg-indigo-500/15 text-indigo-200",
+  backend: "border-cyan-500/40 bg-cyan-500/15 text-cyan-200",
+  db: "border-lime-500/40 bg-lime-500/15 text-lime-200",
+  git: "border-rose-500/40 bg-rose-500/15 text-rose-200",
+  other: "border-stone-500/40 bg-stone-500/15 text-stone-200",
+  chat: "border-blue-500/40 bg-blue-500/15 text-blue-200",
+};
+
+function formatDate(value: string) {
+  const date = new Date(value);
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+export function MemoCard({ memo }: { memo: MemoWithAuthor }) {
+  return (
+    <Link href={`/memos/${memo.id}`} className="block">
+      <Card className="card-sheen transition hover:border-muted">
+        <CardContent className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2 mt-2">
+            <Badge className={cn("border", categoryClass[memo.category] || "bg-secondary text-secondary-foreground")}>
+              {categoryLabel[memo.category] || memo.category}
+            </Badge>
+            <span
+              className={cn(
+                "rounded-full border px-2 py-0.5 text-xs font-semibold uppercase tracking-wide",
+                memo.status === "solved"
+                  ? "border-emerald-500/40 text-emerald-300"
+                  : "border-amber-500/40 text-amber-300"
+              )}
+            >
+              {memo.status}
+            </span>
+          </div>
+          <div className="text-base font-semibold text-foreground">
+            {memo.title}
+          </div>
+          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+            <span>By {memo.author?.display_name || "Unknown"}</span>
+            <span>Updated {formatDate(memo.updated_at)}</span>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
