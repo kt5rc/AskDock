@@ -16,7 +16,7 @@ const categories = [
 ];
 
 export type Filters = {
-  status: 'open' | 'solved';
+  view: 'open' | 'solved' | 'owned';
   category: string;
   q: string;
 };
@@ -27,19 +27,27 @@ export function MemoFilters({ filters, onChange }: { filters: Filters; onChange:
       <div className="flex gap-2">
         <Button
           type="button"
-          variant={filters.status === 'open' ? 'default' : 'secondary'}
+          variant={filters.view === 'open' ? 'default' : 'secondary'}
           size="sm"
-          onClick={() => onChange({ ...filters, status: 'open' })}
+          onClick={() => onChange({ ...filters, view: 'open' })}
         >
           Open
         </Button>
         <Button
           type="button"
-          variant={filters.status === 'solved' ? 'default' : 'secondary'}
+          variant={filters.view === 'solved' ? 'default' : 'secondary'}
           size="sm"
-          onClick={() => onChange({ ...filters, status: 'solved' })}
+          onClick={() => onChange({ ...filters, view: 'solved' })}
         >
           Solved
+        </Button>
+        <Button
+          type="button"
+          variant={filters.view === 'owned' ? 'default' : 'secondary'}
+          size="sm"
+          onClick={() => onChange({ ...filters, view: 'owned' })}
+        >
+          Owned
         </Button>
       </div>
       <div className="grid gap-2 sm:grid-cols-[180px_1fr]">

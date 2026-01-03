@@ -13,7 +13,7 @@ export default function HomePage() {
   const router = useRouter();
   const [user, setUser] = useState<UserPublic | null>(null);
   const [memos, setMemos] = useState<MemoWithAuthor[]>([]);
-  const [filters, setFilters] = useState<Filters>({ status: 'open', category: '', q: '' });
+  const [filters, setFilters] = useState<Filters>({ view: 'open', category: '', q: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,7 +36,11 @@ export default function HomePage() {
       setLoading(true);
       setError(null);
       const params = new URLSearchParams();
-      params.set('status', filters.status);
+      if (filters.view === 'open' || filters.view === 'solved') {
+        params.set('status', filters.view);
+      } else {
+        params.set('owned', '1');
+      }
       if (filters.category) params.set('category', filters.category);
       if (filters.q) params.set('q', filters.q);
       const res = await fetch(`/api/memos?${params.toString()}`);

@@ -14,6 +14,7 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const status = getOptionalString(searchParams.get('status'), 10);
+  const owned = getOptionalString(searchParams.get('owned'), 5);
   const category = getOptionalString(searchParams.get('category'), 20);
   const q = getOptionalString(searchParams.get('q'), 120);
   const cursor = getOptionalString(searchParams.get('cursor'), 40);
@@ -29,6 +30,10 @@ export async function GET(req: Request) {
 
   if (status && allowedStatus.has(status)) {
     query = query.eq('status', status);
+  }
+
+  if (owned === '1' || owned === 'true') {
+    query = query.eq('author_id', user.id);
   }
 
   if (category && allowedCategory.has(category)) {
