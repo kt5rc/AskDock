@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Space_Grotesk } from 'next/font/google';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Question Cards</div>
           </header>
           <main className="flex-1">{children}</main>
+          <SpeedInsights />
         </div>
       </body>
     </html>
