@@ -18,6 +18,7 @@ export default function HomePage() {
     view: "open",
     category: "",
     q: "",
+    sort: "desc",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +70,7 @@ export default function HomePage() {
       }
       if (filters.category) params.set("category", filters.category);
       if (filters.q) params.set("q", filters.q);
+      params.set("sort", filters.sort);
       const res = await fetch(`/api/memos?${params.toString()}`);
       if (!res.ok) {
         setError("Failed to load memos");

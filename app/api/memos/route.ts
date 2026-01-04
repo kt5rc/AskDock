@@ -18,6 +18,7 @@ export async function GET(req: Request) {
   const category = getOptionalString(searchParams.get('category'), 20);
   const q = getOptionalString(searchParams.get('q'), 120);
   const cursor = getOptionalString(searchParams.get('cursor'), 40);
+  const sort = getOptionalString(searchParams.get('sort'), 4);
   const limit = clampNumber(searchParams.get('limit'), 1, 50, 50);
 
   let query = supabaseAdmin
@@ -25,7 +26,7 @@ export async function GET(req: Request) {
     .select(
       'id, title, body, category, status, assignee_id, author_id, created_at, updated_at, solved_at, author:users!memos_author_id_fkey(id, username, display_name, role), comments:comments(created_at)'
     )
-    .order('updated_at', { ascending: false })
+    .order('updated_at', { ascending: sort === 'asc' })
     .limit(limit);
 
   if (status && allowedStatus.has(status)) {
