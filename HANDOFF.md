@@ -26,6 +26,7 @@ API routes
 - Memo routes: list/create/update/delete + comments
 - Account route: profile update
 - Admin routes exist for user management (create/reset/delete/list)
+- Counts route: memo counts for tabs (separate from list)
 
 Key files
 - lib/auth.ts: session validation
@@ -33,6 +34,7 @@ Key files
 - app/api/admin/users/route.ts: delete migration + MIGRATED prefix
 - components/memo-card.tsx: activity ribbon + category color
 - app/admin/users/page.tsx: create/reset/delete user
+- app/page.tsx: SWR + debounced search + separate counts
 
 Env vars
 - SUPABASE_URL
@@ -47,6 +49,7 @@ Notes / gotchas
 - system user must exist or admin delete will fail
 - Deleting users: memos/comments migrate to system; migration comment inserted
 - Display name update uses 40-char limit
+- Memo list uses SWR; counts are fetched from a separate endpoint
 
 Next steps (optional)
 - Consider adding a "system" role if you want explicit separation (currently username-based)
