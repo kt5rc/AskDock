@@ -21,8 +21,8 @@ export async function GET(req: Request) {
   const sort = getOptionalString(searchParams.get('sort'), 4);
   const limit = clampNumber(searchParams.get('limit'), 1, 50, 50);
 
-  const applySearchFilters = (query: ReturnType<typeof supabaseAdmin.from>) => {
-    let next = query;
+  const applySearchFilters = (query: any) => {
+    let next = query as any;
     if (category && allowedCategory.has(category)) {
       next = next.eq('category', category);
     }
