@@ -72,8 +72,9 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
     return NextResponse.json({ error: 'Comment not found' }, { status: 404 });
   }
 
-  if (comment.author_id !== user.id) {
-    return NextResponse.json({ error: 'Only author can delete comment' }, { status: 403 });
+  const isAdmin = user.role === 'admin';
+  if (!isAdmin && comment.author_id !== user.id) {
+    return NextResponse.json({ error: 'Only admin or author can delete comment' }, { status: 403 });
   }
 
   const { error: deleteError } = await supabaseAdmin.from('comments').delete().eq('id', params.id);

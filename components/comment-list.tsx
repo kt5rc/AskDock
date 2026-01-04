@@ -52,7 +52,7 @@ export function CommentList({
     <div className="space-y-4">
       {comments.map((comment) => {
         const canEdit = currentUser.role === 'admin' || comment.author_id === currentUser.id;
-        const canDelete = comment.author_id === currentUser.id;
+        const canDelete = currentUser.role === 'admin' || comment.author_id === currentUser.id;
         const isEditing = editingId === comment.id;
         return (
           <div

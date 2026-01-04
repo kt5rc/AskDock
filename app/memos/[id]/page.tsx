@@ -234,7 +234,7 @@ export default function MemoDetailPage() {
                 {editing ? "Cancel edit" : "Edit"}
               </Button>
             )}
-            {memo.author_id === user.id && (
+            {(user.role === "admin" || memo.author_id === user.id) && (
               <Button size="sm" variant="ghost" onClick={handleDelete}>
                 Delete
               </Button>

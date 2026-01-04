@@ -122,8 +122,9 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
     return NextResponse.json({ error: 'Memo not found' }, { status: 404 });
   }
 
-  if (memo.author_id !== user.id) {
-    return NextResponse.json({ error: 'Only author can delete memo' }, { status: 403 });
+  const isAdmin = user.role === 'admin';
+  if (!isAdmin && memo.author_id !== user.id) {
+    return NextResponse.json({ error: 'Only admin or author can delete memo' }, { status: 403 });
   }
 
   const { error: deleteError } = await supabaseAdmin.from('memos').delete().eq('id', memoId);
