@@ -21,6 +21,17 @@ export async function GET(req: Request) {
   const sort = getOptionalString(searchParams.get('sort'), 4);
   const limit = clampNumber(searchParams.get('limit'), 1, 50, 50);
 
+  const applySearchFilters = (query: ReturnType<typeof supabaseAdmin.from>) => {
+    let next = query;
+    if (category && allowedCategory.has(category)) {
+      next = next.eq('category', category);
+    }
+    if (q) {
+      next = next.or(`title.ilike.%${q}%,body.ilike.%${q}%`);
+    }
+    return next;
+  };
+
   let query = supabaseAdmin
     .from('memos')
     .select(
@@ -29,20 +40,14 @@ export async function GET(req: Request) {
     .order('updated_at', { ascending: sort === 'asc' })
     .limit(limit);
 
+  query = applySearchFilters(query);
+
   if (status && allowedStatus.has(status)) {
     query = query.eq('status', status);
   }
 
   if (owned === '1' || owned === 'true') {
     query = query.eq('author_id', user.id);
-  }
-
-  if (category && allowedCategory.has(category)) {
-    query = query.eq('category', category);
-  }
-
-  if (q) {
-    query = query.or(`title.ilike.%${q}%,body.ilike.%${q}%`);
   }
 
   if (cursor) {
@@ -70,7 +75,35 @@ export async function GET(req: Request) {
 
   const nextCursor = data && data.length === limit ? data[data.length - 1].updated_at : null;
 
-  return NextResponse.json({ memos, nextCursor });
+  const [allCount, openCount, solvedCount, ownedCount] = await Promise.all([
+    applySearchFilters(
+      supabaseAdmin.from('memos').select('id', { count: 'exact', head: true })
+    ),
+    applySearchFilters(
+      supabaseAdmin.from('memos').select('id', { count: 'exact', head: true })
+    ).eq('status', 'open'),
+    applySearchFilters(
+      supabaseAdmin.from('memos').select('id', { count: 'exact', head: true })
+    ).eq('status', 'solved'),
+    applySearchFilters(
+      supabaseAdmin.from('memos').select('id', { count: 'exact', head: true })
+    ).eq('author_id', user.id)
+  ]);
+
+  if (allCount.error || openCount.error || solvedCount.error || ownedCount.error) {
+    return NextResponse.json({ error: 'Failed to load counts' }, { status: 500 });
+  }
+
+  return NextResponse.json({
+    memos,
+    nextCursor,
+    counts: {
+      all: allCount.count ?? 0,
+      open: openCount.count ?? 0,
+      solved: solvedCount.count ?? 0,
+      owned: ownedCount.count ?? 0
+    }
+  });
 }
 
 export async function POST(req: Request) {

@@ -22,6 +22,12 @@ export default function HomePage() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [counts, setCounts] = useState<{ all: number; open: number; solved: number; owned: number }>({
+    all: 0,
+    open: 0,
+    solved: 0,
+    owned: 0,
+  });
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -65,8 +71,10 @@ export default function HomePage() {
       const params = new URLSearchParams();
       if (filters.view === "open" || filters.view === "solved") {
         params.set("status", filters.view);
-      } else {
+      } else if (filters.view === "owned") {
         params.set("owned", "1");
+      } else {
+        // all
       }
       if (filters.category) params.set("category", filters.category);
       if (filters.q) params.set("q", filters.q);
@@ -79,6 +87,14 @@ export default function HomePage() {
       }
       const data = await res.json();
       setMemos(data.memos || []);
+      if (data.counts) {
+        setCounts({
+          all: data.counts.all ?? 0,
+          open: data.counts.open ?? 0,
+          solved: data.counts.solved ?? 0,
+          owned: data.counts.owned ?? 0,
+        });
+      }
       setLoading(false);
     };
     loadMemos();
@@ -171,7 +187,7 @@ export default function HomePage() {
         </CardContent>
       </Card>
 
-      <MemoFilters filters={filters} onChange={setFilters} />
+      <MemoFilters filters={filters} onChange={setFilters} counts={counts} />
 
       {error && <div className="text-sm text-destructive">{error}</div>}
       {loading && (
