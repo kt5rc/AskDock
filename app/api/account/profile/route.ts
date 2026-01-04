@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json().catch(() => null);
-  const displayName = getString(body?.display_name, 12);
+  const displayName = getString(body?.display_name, 40);
 
   if (!displayName) {
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });

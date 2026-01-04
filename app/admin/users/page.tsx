@@ -35,6 +35,9 @@ export default function AdminUsersPage() {
   const [createLoading, setCreateLoading] = useState(false);
   const [createMessage, setCreateMessage] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [showCreatePassword, setShowCreatePassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const loadUsers = async () => {
     const res = await fetch("/api/admin/users");
@@ -70,6 +73,8 @@ export default function AdminUsersPage() {
     setNewPassword("");
     setConfirmPassword("");
     setMessage(null);
+    setShowResetPassword(false);
+    setShowResetConfirm(false);
   };
 
   const cancelReset = () => {
@@ -77,6 +82,8 @@ export default function AdminUsersPage() {
     setNewPassword("");
     setConfirmPassword("");
     setMessage(null);
+    setShowResetPassword(false);
+    setShowResetConfirm(false);
   };
 
   const submitReset = async (userId: string) => {
@@ -125,8 +132,8 @@ export default function AdminUsersPage() {
       setCreateMessage("Display name is required");
       return;
     }
-    if (createDisplayName.trim().length > 12) {
-      setCreateMessage("Display name must be 12 characters or less");
+    if (createDisplayName.trim().length > 40) {
+      setCreateMessage("Display name must be 40 characters or less");
       return;
     }
     if (createPassword.length < 8) {
@@ -156,6 +163,7 @@ export default function AdminUsersPage() {
       setCreateDisplayName("");
       setCreatePassword("");
       setCreateRole("user");
+      setShowCreatePassword(false);
       await loadUsers();
     } finally {
       setCreateLoading(false);
@@ -208,25 +216,34 @@ export default function AdminUsersPage() {
                   autoComplete="off"
                 />
                 <Input
-                  placeholder="Display name (max 12)"
+                  placeholder="Display name (max 40)"
                   value={createDisplayName}
                   onChange={(event) => setCreateDisplayName(event.target.value)}
-                  maxLength={12}
+                  maxLength={40}
                 />
               </div>
-              <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid gap-2 sm:grid-cols-2">
+              <div className="relative">
                 <Input
-                  type="password"
+                  type={showCreatePassword ? "text" : "password"}
                   placeholder="Temporary password"
                   value={createPassword}
                   onChange={(event) => setCreatePassword(event.target.value)}
                   autoComplete="new-password"
                 />
-                <Select value={createRole} onChange={(event) => setCreateRole(event.target.value)}>
-                  <option value="user">user</option>
-                  <option value="admin">admin</option>
-                </Select>
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowCreatePassword((prev) => !prev)}
+                >
+                  {showCreatePassword ? "Hide" : "Show"}
+                </button>
               </div>
+              <Select value={createRole} onChange={(event) => setCreateRole(event.target.value)}>
+                <option value="user">user</option>
+                <option value="admin">admin</option>
+              </Select>
+            </div>
               {createMessage && <div className="text-sm text-muted-foreground">{createMessage}</div>}
               <div className="flex justify-end">
                 <Button type="submit" disabled={createLoading}>
@@ -274,25 +291,43 @@ export default function AdminUsersPage() {
             <CardContent className="space-y-3 pt-0">
               {activeUserId === user.id ? (
                 <div className="space-y-2">
-                  <div className="text-xs text-muted-foreground">
-                    Reset password for {user.username}
-                  </div>
-                  <div className="grid gap-2 sm:grid-cols-2">
+                <div className="text-xs text-muted-foreground">
+                  Reset password for {user.username}
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="relative">
                     <Input
-                      type="password"
+                      type={showResetPassword ? "text" : "password"}
                       placeholder="New password"
                       value={newPassword}
                       onChange={(event) => setNewPassword(event.target.value)}
                       autoComplete="new-password"
                     />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
+                      onClick={() => setShowResetPassword((prev) => !prev)}
+                    >
+                      {showResetPassword ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                  <div className="relative">
                     <Input
-                      type="password"
+                      type={showResetConfirm ? "text" : "password"}
                       placeholder="Confirm password"
                       value={confirmPassword}
                       onChange={(event) => setConfirmPassword(event.target.value)}
                       autoComplete="new-password"
                     />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
+                      onClick={() => setShowResetConfirm((prev) => !prev)}
+                    >
+                      {showResetConfirm ? "Hide" : "Show"}
+                    </button>
                   </div>
+                </div>
                   {message && (
                     <div className="text-sm text-muted-foreground">{message}</div>
                   )}

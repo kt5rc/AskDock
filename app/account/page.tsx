@@ -11,6 +11,9 @@ export default function AccountPage() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -87,8 +90,8 @@ export default function AccountPage() {
       return;
     }
 
-    if (displayName.trim().length > 12) {
-      setProfileError("Display name must be 12 characters or less");
+    if (displayName.trim().length > 40) {
+      setProfileError("Display name must be 40 characters or less");
       return;
     }
 
@@ -137,12 +140,12 @@ export default function AccountPage() {
             </div>
             <div className="space-y-1">
               <div className="text-xs text-muted-foreground">
-                Display name (max 12)
+                Display name (max 40)
               </div>
               <Input
                 value={displayName}
                 onChange={(event) => setDisplayName(event.target.value)}
-                maxLength={12}
+                maxLength={40}
               />
             </div>
             {profileError && (
@@ -164,27 +167,54 @@ export default function AccountPage() {
         <CardContent className="space-y-4">
           <div className="text-sm font-semibold mt-3">Change password</div>
           <form onSubmit={handleSubmit} className="space-y-3">
-            <Input
-              type="password"
-              placeholder="Current password"
-              value={currentPassword}
-              onChange={(event) => setCurrentPassword(event.target.value)}
-              autoComplete="current-password"
-            />
-            <Input
-              type="password"
-              placeholder="New password"
-              value={newPassword}
-              onChange={(event) => setNewPassword(event.target.value)}
-              autoComplete="new-password"
-            />
-            <Input
-              type="password"
-              placeholder="Confirm new password"
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              autoComplete="new-password"
-            />
+            <div className="relative">
+              <Input
+                type={showCurrent ? "text" : "password"}
+                placeholder="Current password"
+                value={currentPassword}
+                onChange={(event) => setCurrentPassword(event.target.value)}
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => setShowCurrent((prev) => !prev)}
+              >
+                {showCurrent ? "Hide" : "Show"}
+              </button>
+            </div>
+            <div className="relative">
+              <Input
+                type={showNew ? "text" : "password"}
+                placeholder="New password"
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => setShowNew((prev) => !prev)}
+              >
+                {showNew ? "Hide" : "Show"}
+              </button>
+            </div>
+            <div className="relative">
+              <Input
+                type={showConfirm ? "text" : "password"}
+                placeholder="Confirm new password"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => setShowConfirm((prev) => !prev)}
+              >
+                {showConfirm ? "Hide" : "Show"}
+              </button>
+            </div>
             {error && <div className="text-sm text-destructive">{error}</div>}
             {success && (
               <div className="text-sm text-emerald-300">{success}</div>
