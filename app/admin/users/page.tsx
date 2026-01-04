@@ -189,11 +189,16 @@ export default function AdminUsersPage() {
 
   return (
     <div className="mx-auto mt-10 max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Users</h1>
-        <p className="text-sm text-muted-foreground">
-          Admin-only list of users. Use this to manage accounts.
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">Users</h1>
+          <p className="text-sm text-muted-foreground">
+            Admin-only list of users. Use this to manage accounts.
+          </p>
+        </div>
+        <Button variant="ghost" onClick={() => router.push("/")}>
+          Back
+        </Button>
       </div>
 
       <Card className="card-sheen">

@@ -117,11 +117,16 @@ export default function AccountPage() {
 
   return (
     <div className="mx-auto mt-10 max-w-xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Account</h1>
-        <p className="text-sm text-muted-foreground">
-          Change your password here. You will be logged out after updating.
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">Account</h1>
+          <p className="text-sm text-muted-foreground">
+            Change your password here. You will be logged out after updating.
+          </p>
+        </div>
+        <Button variant="ghost" onClick={() => router.push("/")}>
+          Back
+        </Button>
       </div>
 
       <Card className="card-sheen">
