@@ -127,11 +127,9 @@ export default function HomePage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Question Cards</h1>
-          {user && (
-            <p className="text-sm text-muted-foreground">
-              Welcome back, {user.display_name}
-            </p>
-          )}
+          <p className="min-h-[1.25rem] text-sm text-muted-foreground">
+            {user ? `Welcome back, ${user.display_name}` : "\u00A0"}
+          </p>
         </div>
         <div className="relative" ref={menuRef}>
           <button
