@@ -37,6 +37,13 @@ function formatDate(value: string) {
 }
 
 export function MemoCard({ memo }: { memo: MemoWithAuthor }) {
+  const authorClass =
+    memo.author?.username === "system"
+      ? "text-violet-300"
+      : memo.author?.role === "admin"
+        ? "text-rose-300"
+        : "text-muted-foreground";
+
   return (
     <Link href={`/memos/${memo.id}`} className="block">
       <Card className="card-sheen transition hover:border-muted">
@@ -60,7 +67,9 @@ export function MemoCard({ memo }: { memo: MemoWithAuthor }) {
             {memo.title}
           </div>
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-            <span>By {memo.author?.display_name || "Unknown"}</span>
+            <span className={cn(authorClass)}>
+              By {memo.author?.display_name || "Unknown"}
+            </span>
             <span>Updated {formatDate(memo.updated_at)}</span>
           </div>
         </CardContent>

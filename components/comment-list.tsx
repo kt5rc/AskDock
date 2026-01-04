@@ -54,6 +54,12 @@ export function CommentList({
         const canEdit = currentUser.role === 'admin' || comment.author_id === currentUser.id;
         const canDelete = currentUser.role === 'admin' || comment.author_id === currentUser.id;
         const isEditing = editingId === comment.id;
+        const authorClass =
+          comment.author.username === 'system'
+            ? 'text-violet-300'
+            : comment.author.role === 'admin'
+              ? 'text-rose-300'
+              : 'text-foreground';
         return (
           <div
             key={comment.id}
@@ -63,7 +69,9 @@ export function CommentList({
             )}
           >
             <div className="flex items-center justify-between">
-              <div className="text-sm font-semibold">{comment.author.display_name}</div>
+              <div className={cn('text-sm font-semibold', authorClass)}>
+                {comment.author.display_name}
+              </div>
               <div className="text-xs text-muted-foreground">{formatDate(comment.created_at)}</div>
             </div>
             {isEditing ? (

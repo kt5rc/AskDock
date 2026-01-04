@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MemoCard } from "@/components/memo-card";
 import { MemoEditor } from "@/components/memo-editor";
 import { MemoFilters, Filters } from "@/components/memo-filters";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import type { MemoWithAuthor, UserPublic } from "@/types/db";
 
@@ -20,6 +21,8 @@ export default function HomePage() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -33,6 +36,25 @@ export default function HomePage() {
     };
     loadUser();
   }, [router]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onClick = (event: MouseEvent) => {
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
 
   useEffect(() => {
     if (!user) return;
@@ -93,9 +115,47 @@ export default function HomePage() {
             </p>
           )}
         </div>
-        <Button variant="ghost" onClick={handleLogout}>
-          Log out
-        </Button>
+        <div className="relative" ref={menuRef}>
+          <button
+            type="button"
+            className="flex h-9 w-9 items-center justify-center rounded-md border border-border text-muted-foreground transition hover:text-foreground focus:outline-none"
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((prev) => !prev)}
+          >
+            <span className="text-lg leading-none">...</span>
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 mt-2 w-44 rounded-md border border-border bg-secondary/90 p-1 shadow-md backdrop-blur">
+              <Link
+                href="/account"
+                className="block rounded-sm px-3 py-2 text-sm text-foreground/90 hover:bg-accent"
+                onClick={() => setMenuOpen(false)}
+              >
+                Account
+              </Link>
+              {user?.role === "admin" && (
+                <Link
+                  href="/admin/users"
+                  className="block rounded-sm px-3 py-2 text-sm text-foreground/90 hover:bg-accent"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Users
+                </Link>
+              )}
+              <Button
+                variant="ghost"
+                className="h-9 w-full justify-start px-3 text-sm"
+                onClick={() => {
+                  setMenuOpen(false);
+                  handleLogout();
+                }}
+              >
+                Log out
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       <Card className="card-sheen">

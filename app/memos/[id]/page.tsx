@@ -168,6 +168,13 @@ export default function MemoDetailPage() {
 
   const canEdit = user.role === "admin" || memo.author_id === user.id;
 
+  const authorClass =
+    memo.author.username === "system"
+      ? "text-violet-300"
+      : memo.author.role === "admin"
+        ? "text-rose-300"
+        : "text-muted-foreground";
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -198,7 +205,7 @@ export default function MemoDetailPage() {
           </div>
           <div>
             <h1 className="text-2xl font-semibold">{memo.title}</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className={cn("mt-2 text-sm", authorClass)}>
               By {memo.author.display_name}
             </p>
           </div>
