@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import useSWR from "swr";
 import { MemoCard } from "@/components/memo-card";
 import { MemoEditor } from "@/components/memo-editor";
 import { MemoFilters, Filters } from "@/components/memo-filters";
@@ -10,24 +11,24 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import type { MemoWithAuthor, UserPublic } from "@/types/db";
 
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error("Failed to load memos");
+  }
+  return res.json();
+};
+
 export default function HomePage() {
   const router = useRouter();
   const [user, setUser] = useState<UserPublic | null>(null);
-  const [memos, setMemos] = useState<MemoWithAuthor[]>([]);
   const [filters, setFilters] = useState<Filters>({
     view: "open",
     category: "",
     q: "",
     sort: "desc",
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [counts, setCounts] = useState<{ all: number; open: number; solved: number; owned: number }>({
-    all: 0,
-    open: 0,
-    solved: 0,
-    owned: 0,
-  });
+  const [debouncedQ, setDebouncedQ] = useState(filters.q);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -64,41 +65,31 @@ export default function HomePage() {
   }, [menuOpen]);
 
   useEffect(() => {
-    if (!user) return;
-    const loadMemos = async () => {
-      setLoading(true);
-      setError(null);
-      const params = new URLSearchParams();
-      if (filters.view === "open" || filters.view === "solved") {
-        params.set("status", filters.view);
-      } else if (filters.view === "owned") {
-        params.set("owned", "1");
-      } else {
-        // all
-      }
-      if (filters.category) params.set("category", filters.category);
-      if (filters.q) params.set("q", filters.q);
-      params.set("sort", filters.sort);
-      const res = await fetch(`/api/memos?${params.toString()}`);
-      if (!res.ok) {
-        setError("Failed to load memos");
-        setLoading(false);
-        return;
-      }
-      const data = await res.json();
-      setMemos(data.memos || []);
-      if (data.counts) {
-        setCounts({
-          all: data.counts.all ?? 0,
-          open: data.counts.open ?? 0,
-          solved: data.counts.solved ?? 0,
-          owned: data.counts.owned ?? 0,
-        });
-      }
-      setLoading(false);
-    };
-    loadMemos();
-  }, [filters, user]);
+    const timer = setTimeout(() => setDebouncedQ(filters.q), 300);
+    return () => clearTimeout(timer);
+  }, [filters.q]);
+
+  const queryString = useMemo(() => {
+    const params = new URLSearchParams();
+    if (filters.view === "open" || filters.view === "solved") {
+      params.set("status", filters.view);
+    } else if (filters.view === "owned") {
+      params.set("owned", "1");
+    }
+    if (filters.category) params.set("category", filters.category);
+    if (debouncedQ) params.set("q", debouncedQ);
+    params.set("sort", filters.sort);
+    return params.toString();
+  }, [filters.view, filters.category, filters.sort, debouncedQ]);
+
+  const { data, error, isLoading, mutate } = useSWR(
+    user ? `/api/memos?${queryString}` : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  const memos = (data?.memos ?? []) as MemoWithAuthor[];
+  const counts = data?.counts ?? { all: 0, open: 0, solved: 0, owned: 0 };
 
   const handleCreate = async (draft: {
     title: string;
@@ -111,9 +102,7 @@ export default function HomePage() {
       body: JSON.stringify(draft),
     });
     if (res.ok) {
-      const created = await res.json();
-      const withAuthor = user ? { ...created, author: user } : created;
-      setMemos((prev) => [withAuthor, ...prev]);
+      await mutate();
     }
   };
 
@@ -187,11 +176,11 @@ export default function HomePage() {
 
       <MemoFilters filters={filters} onChange={setFilters} counts={counts} />
 
-      {error && <div className="text-sm text-destructive">{error}</div>}
-      {loading && (
+      {error && <div className="text-sm text-destructive">Failed to load memos</div>}
+      {isLoading && (
         <div className="text-sm text-muted-foreground">Loading memos...</div>
       )}
-      {!loading && memos.length === 0 && (
+      {!isLoading && memos.length === 0 && (
         <div className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
           No memos yet. Start with your first question.
         </div>

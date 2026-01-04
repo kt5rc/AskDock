@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
 
 const categories = [
   { value: "", label: "All categories" },
@@ -46,28 +45,20 @@ export function MemoFilters({
         </Button>
         <Button
           type="button"
-          variant="secondary"
+          variant={filters.view === "open" ? "default" : "secondary"}
           size="sm"
+          className={filters.view === "open" ? "border-amber-500/40 bg-amber-500/20 text-amber-200" : ""}
           onClick={() => onChange({ ...filters, view: "open" })}
-          className={cn(
-            filters.view === "open"
-              ? "border-amber-500/40 bg-amber-500/20 text-amber-200"
-              : "border-border"
-          )}
         >
           Open
           <span className="ml-2 text-xs text-muted-foreground">{counts.open}</span>
         </Button>
         <Button
           type="button"
-          variant="secondary"
+          variant={filters.view === "solved" ? "default" : "secondary"}
           size="sm"
+          className={filters.view === "solved" ? "border-emerald-500/40 bg-emerald-500/20 text-emerald-200" : ""}
           onClick={() => onChange({ ...filters, view: "solved" })}
-          className={cn(
-            filters.view === "solved"
-              ? "border-emerald-500/40 bg-emerald-500/20 text-emerald-200"
-              : "border-border"
-          )}
         >
           Solved
           <span className="ml-2 text-xs text-muted-foreground">{counts.solved}</span>
