@@ -48,6 +48,8 @@ export function MemoCard({ memo }: { memo: MemoWithAuthor }) {
         ? "text-rose-300"
         : "text-muted-foreground";
 
+  const isUpdated = memo.updated_at !== memo.created_at;
+
   return (
     <Link href={`/memos/${memo.id}`} className="block">
       <Card className="relative overflow-hidden card-sheen transition hover:border-muted">
@@ -88,7 +90,10 @@ export function MemoCard({ memo }: { memo: MemoWithAuthor }) {
             <span className={cn(authorClass)}>
               By {memo.author?.display_name || "Unknown"}
             </span>
-            <span>Updated {formatDate(memo.updated_at)}</span>
+            <span>
+              {isUpdated ? "Updated " : "Created "}
+              {formatDate(isUpdated ? memo.updated_at : memo.created_at)}
+            </span>
           </div>
         </CardContent>
       </Card>

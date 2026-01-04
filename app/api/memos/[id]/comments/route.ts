@@ -25,5 +25,10 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     return NextResponse.json({ error: 'Failed to add comment' }, { status: 500 });
   }
 
+  await supabaseAdmin
+    .from('memos')
+    .update({ updated_at: new Date().toISOString() })
+    .eq('id', params.id);
+
   return NextResponse.json(data, { status: 201 });
 }
