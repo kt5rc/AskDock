@@ -75,34 +75,9 @@ export async function GET(req: Request) {
 
   const nextCursor = data && data.length === limit ? data[data.length - 1].updated_at : null;
 
-  const [allCount, openCount, solvedCount, ownedCount] = await Promise.all([
-    applySearchFilters(
-      supabaseAdmin.from('memos').select('id', { count: 'exact', head: true })
-    ),
-    applySearchFilters(
-      supabaseAdmin.from('memos').select('id', { count: 'exact', head: true })
-    ).eq('status', 'open'),
-    applySearchFilters(
-      supabaseAdmin.from('memos').select('id', { count: 'exact', head: true })
-    ).eq('status', 'solved'),
-    applySearchFilters(
-      supabaseAdmin.from('memos').select('id', { count: 'exact', head: true })
-    ).eq('author_id', user.id)
-  ]);
-
-  if (allCount.error || openCount.error || solvedCount.error || ownedCount.error) {
-    return NextResponse.json({ error: 'Failed to load counts' }, { status: 500 });
-  }
-
   return NextResponse.json({
     memos,
-    nextCursor,
-    counts: {
-      all: allCount.count ?? 0,
-      open: openCount.count ?? 0,
-      solved: solvedCount.count ?? 0,
-      owned: ownedCount.count ?? 0
-    }
+    nextCursor
   });
 }
 

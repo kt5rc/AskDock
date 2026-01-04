@@ -21,7 +21,6 @@ const fetcher = async (url: string) => {
 
 export default function HomePage() {
   const router = useRouter();
-  const [user, setUser] = useState<UserPublic | null>(null);
   const [filters, setFilters] = useState<Filters>({
     view: "open",
     category: "",
@@ -32,18 +31,17 @@ export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
+  const { data: user, error: userError } = useSWR<UserPublic>(
+    "/api/auth/me",
+    fetcher,
+    { shouldRetryOnError: false }
+  );
+
   useEffect(() => {
-    const loadUser = async () => {
-      const res = await fetch("/api/auth/me");
-      if (!res.ok) {
-        router.replace("/login");
-        return;
-      }
-      const data = (await res.json()) as UserPublic;
-      setUser(data);
-    };
-    loadUser();
-  }, [router]);
+    if (userError) {
+      router.replace("/login");
+    }
+  }, [userError, router]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -65,7 +63,7 @@ export default function HomePage() {
   }, [menuOpen]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedQ(filters.q), 300);
+    const timer = setTimeout(() => setDebouncedQ(filters.q), 500);
     return () => clearTimeout(timer);
   }, [filters.q]);
 
@@ -85,11 +83,25 @@ export default function HomePage() {
   const { data, error, isLoading, mutate } = useSWR(
     user ? `/api/memos?${queryString}` : null,
     fetcher,
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: false, keepPreviousData: true }
   );
 
   const memos = (data?.memos ?? []) as MemoWithAuthor[];
-  const counts = data?.counts ?? { all: 0, open: 0, solved: 0, owned: 0 };
+
+  const countQuery = useMemo(() => {
+    const params = new URLSearchParams();
+    if (filters.category) params.set("category", filters.category);
+    if (debouncedQ) params.set("q", debouncedQ);
+    return params.toString();
+  }, [filters.category, debouncedQ]);
+
+  const { data: countsData } = useSWR(
+    user ? `/api/memos/counts?${countQuery}` : null,
+    fetcher,
+    { revalidateOnFocus: false, dedupingInterval: 5000 }
+  );
+
+  const counts = countsData ?? { all: 0, open: 0, solved: 0, owned: 0 };
 
   const handleCreate = async (draft: {
     title: string;
