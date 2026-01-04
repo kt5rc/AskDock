@@ -23,7 +23,7 @@ export async function GET(req: Request) {
   let query = supabaseAdmin
     .from('memos')
     .select(
-      'id, title, body, category, status, assignee_id, author_id, created_at, updated_at, solved_at, author:users!memos_author_id_fkey(id, username, display_name, role)'
+      'id, title, body, category, status, assignee_id, author_id, created_at, updated_at, solved_at, author:users!memos_author_id_fkey(id, username, display_name, role), comments:comments(created_at)'
     )
     .order('updated_at', { ascending: false })
     .limit(limit);
@@ -53,9 +53,23 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Failed to load memos' }, { status: 500 });
   }
 
+  const memos =
+    data?.map((memo) => {
+      const comments = (memo as { comments?: Array<{ created_at: string }> }).comments || [];
+      const commentCount = comments.length;
+      const latest =
+        commentCount === 0
+          ? null
+          : comments
+              .map((comment) => comment.created_at)
+              .reduce((a, b) => (a > b ? a : b));
+      const { comments: _comments, ...rest } = memo as Record<string, unknown>;
+      return { ...rest, comment_count: commentCount, comment_latest_at: latest };
+    }) || [];
+
   const nextCursor = data && data.length === limit ? data[data.length - 1].updated_at : null;
 
-  return NextResponse.json({ memos: data || [], nextCursor });
+  return NextResponse.json({ memos, nextCursor });
 }
 
 export async function POST(req: Request) {

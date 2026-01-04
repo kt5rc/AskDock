@@ -37,6 +37,10 @@ function formatDate(value: string) {
 }
 
 export function MemoCard({ memo }: { memo: MemoWithAuthor }) {
+  const isNew = Date.now() - new Date(memo.created_at).getTime() < 24 * 60 * 60 * 1000;
+  const hasRecentReply = memo.comment_latest_at
+    ? Date.now() - new Date(memo.comment_latest_at).getTime() < 24 * 60 * 60 * 1000
+    : false;
   const authorClass =
     memo.author?.username === "system"
       ? "text-violet-300"
@@ -46,7 +50,21 @@ export function MemoCard({ memo }: { memo: MemoWithAuthor }) {
 
   return (
     <Link href={`/memos/${memo.id}`} className="block">
-      <Card className="card-sheen transition hover:border-muted">
+      <Card className="relative overflow-hidden card-sheen transition hover:border-muted">
+        {(isNew || hasRecentReply) && (
+          <div className="pointer-events-none absolute left-0 top-0 h-full w-2">
+            {isNew && hasRecentReply ? (
+              <>
+                <div className="h-1/2 w-full bg-emerald-500/80" />
+                <div className="h-1/2 w-full bg-sky-500/80" />
+              </>
+            ) : isNew ? (
+              <div className="h-full w-full bg-emerald-500/80" />
+            ) : (
+              <div className="h-full w-full bg-sky-500/80" />
+            )}
+          </div>
+        )}
         <CardContent className="space-y-3">
           <div className="flex flex-wrap items-center gap-2 mt-2">
             <Badge className={cn("border", categoryClass[memo.category] || "bg-secondary text-secondary-foreground")}>

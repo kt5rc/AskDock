@@ -18,6 +18,8 @@ export type Memo = {
   created_at: string;
   updated_at: string;
   solved_at: string | null;
+  comment_count?: number;
+  comment_latest_at?: string | null;
 };
 
 export type Comment = {
