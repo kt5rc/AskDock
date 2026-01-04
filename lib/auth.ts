@@ -31,13 +31,16 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 
   if (error || !session || !session.user) return null;
 
+  const rawUser = Array.isArray(session.user) ? session.user[0] : session.user;
+  if (!rawUser) return null;
+
   const expiresAt = new Date(session.expires_at);
   if (Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() <= Date.now()) {
     await supabaseAdmin.from('sessions').delete().eq('id', cookie.value);
     return null;
   }
 
-  return session.user as SessionUser;
+  return rawUser as SessionUser;
 }
 
 export function getSessionCookieOptions() {
